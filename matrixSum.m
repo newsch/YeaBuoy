@@ -1,4 +1,4 @@
-function matrixSum(A)
+function M = matrixSum(A)
     % matrixSum: returns total of all elements in the matrix
     % A: matrix
     % returns: scalar
