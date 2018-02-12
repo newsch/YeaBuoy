@@ -47,6 +47,16 @@ torques = zeros([length(thetaVals)]);
 %[mesh.ygrid, mesh.zgrid] = meshgrid(mesh.ys, mesh.zs);
 % [mesh.xgrid, mesh.ygrid, mesh.zgrid] = meshgrid(mesh.xs, mesh.ys, mesh.zs);
 
+
+% mesh = createMeshGrid(dy,dz,boatSpec);
+
+% mesh.xs = 0:1:1;
+mesh.ys = -boatSpec.HB:dy:boatSpec.HB;        % meters
+mesh.zs = 0:dz:boatSpec.D;                % meters
+[mesh.ygrid,mesh.zgrid] = meshgrid(mesh.ys,mesh.zs); %create an yz meshgrid
+total_area = boatSpec.W * boatSpec.D;     % find the area of the subsection
+mesh.dA = total_area / numel(mesh.ygrid); % find the meshes
+
 %% calculations
 % figure; hold on
 % thetaVals = [0:20:160];
