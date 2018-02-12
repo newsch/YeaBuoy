@@ -15,8 +15,8 @@ waterSpec.eq = @(y) waterRep(y, theta, d);
 
 
 mesh.dx = 0.01;     % meters
-mesh.dy = mesh.dy;  % meters
-mesh.dz = mesh.dz;  % meters
+mesh.dy = mesh.dx;  % meters
+mesh.dz = mesh.dx;  % meters
 
 mesh.xs = -boatSpec.L/2:mesh.dx:boatSpec.L/2;
 mesh.ys = -boatSpec.W/2:mesh.dx:boatSpec.W/2;
@@ -26,17 +26,30 @@ mesh.zs = 0:mesh.dx:boatSpec.D;
 % [mesh.xgrid, mesh.ygrid, mesh.zgrid] = meshgrid(mesh.xs, mesh.ys, mesh.zs);
 
 %% calculations
-
+figure; hold on
+thetaVals = [0:20:160];
+nVals = [1, 2, 10];
+torques = zeros([length(thetaVals), length(nVals)]);
+for i = 1:length(nVals)
+    n = nVals(i);
+    for j = 1:length(thetaVals)
+        theta = thetaVals(j);
+        torque =  rightingMoment(theta, n);
+        torques(j,i) = torque(1);
+    end
+    plot(thetaVals, torques(:,i))
+end
+hold off
+torques
 
 %% functions
-function z = boatYZ(mesh, y)
-    z = boat.D*abs(y/boat.HB).^boatSpec.n;
-    mesh.zgrid > y;
+function z = boatYZ(boatSpec, y)
+    z = boatSpec.D*abs(y/boatSpec.HB).^boatSpec.n;
 end
 
-function hull = boatLogYZ(y)
+function hull = boatLogYZ(mesh, y)
     y = boatYZ(y);
-    
+    hull = mesh.zgrid > y;
 end
 
 function y = waterRep(x, theta, d)
