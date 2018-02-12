@@ -1,3 +1,4 @@
+%% boat, water, mesh init
 boatSpec.L = 0.30;         % length in meters
 boatSpec.W = 0.20;         % width in meters
 boatSpec.HB = boatSpec.W / 2;  % half breadth in meters
@@ -17,11 +18,25 @@ mesh.dx = 0.01;     % meters
 mesh.dy = mesh.dy;  % meters
 mesh.dz = mesh.dz;  % meters
 
-mesh.xs = 
+mesh.xs = -boatSpec.L/2:mesh.dx:boatSpec.L/2;
+mesh.ys = -boatSpec.W/2:mesh.dx:boatSpec.W/2;
+mesh.zs = 0:mesh.dx:boatSpec.D;
+
+[mesh.ygrid, mesh.zgrid] = meshgrid(mesh.ys, mesh.zs);
+% [mesh.xgrid, mesh.ygrid, mesh.zgrid] = meshgrid(mesh.xs, mesh.ys, mesh.zs);
+
+%% calculations
 
 
-function z = boatYZ(y)
-    pass;
+%% functions
+function z = boatYZ(mesh, y)
+    z = boat.D*abs(y/boat.HB).^boatSpec.n;
+    mesh.zgrid > y;
+end
+
+function hull = boatLogYZ(y)
+    y = boatYZ(y);
+    
 end
 
 function y = waterRep(x, theta, d)
