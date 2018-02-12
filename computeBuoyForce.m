@@ -1,3 +1,4 @@
-function force = computeBuoyForce(theta,mass)
-    force = [-(10 * mass * abs(sind(theta))),10 * mass * cosd(theta),0];
+function force = computeBuoyForce(theta,displaced_mass)
+    f_bmag = 9.8*displaced_mass;
+    force = [0, sind(theta)*f_bmag, cosd(theta)*f_bmag];
 end
