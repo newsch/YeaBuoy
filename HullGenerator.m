@@ -1,5 +1,5 @@
 function hull = HullGenerator(mesh,equation)
-    y = mesh.y;
+    y = mesh.ygrid;
     z = equation(y);
     hull = mesh.zgrid > z;
 end

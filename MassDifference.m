@@ -1,6 +1,6 @@
-function difference = MassDifference(waterline,boat,theta,mesh)
+function difference = MassDifference(waterline,boat,theta,mesh,density)
    logicaleq = @(y) (calculateWaterEquation(y,waterline,theta));
-   water = hullGenerator(mesh,logicaleq);
+   water = HullGenerator(mesh,logicaleq);
    sub_region = boat.hull & water;
    num_cells_water = matrixSum(sub_region);
    area_water = num_cells_water * mesh.dA;

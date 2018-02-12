@@ -11,36 +11,56 @@ boatSpec.n = 2;            % shape parameter (dimensionless)
 waterSpec.density = 1000;  % kg / m^3
 theta = 15;
 d = 2;
-waterSpec.eq = @(y) waterRep(y, theta, d);
+%waterSpec.eq = @(y) waterRep(y, theta, d);
 
 
 mesh.dx = 0.01;     % meters
-mesh.dy = mesh.dx;  % meters
-mesh.dz = mesh.dx;  % meters
+dy = mesh.dx;  % meters
+dz = mesh.dx;  % meters
+mesh = createMeshGrid(dy,dz,boatSpec);
+equationBoat = @(y) (boatYZ(boatSpec,y));
+boatSpec.hull = HullGenerator(mesh,equationBoat);
+[masses,boatSpec] = computeMasses(mesh,boatSpec);
+boatSpec.COM = centerOfMass(masses,mesh);
+thetaVals = [0:20:160];
+torques = zeros([length(thetaVals)]);
+ for j = 1:length(thetaVals)
+    theta = thetaVals(j);
+    theta
+    fun = @(waterline) (MassDifference(waterline,boatSpec,theta,mesh,waterSpec.density));
+    waterline = fzero(fun,0.05);
+    equationWater = @(y) waterRep(y, theta, d);
+    water = HullGenerator(mesh,equationWater);
+    displaced = boatSpec.hull & water;
+    COB = centerOfMass(displaced,mesh);
+    BuoyForce = computeBuoyForce(theta,boatSpec.mass);
+    torque = findMoment(boatSpec.COM,COB,BuoyForce);
+    torques(j) = torque(1);
+ end
+ plot(thetaVals,torques);
+%mesh.xs = -boatSpec.L/2:mesh.dx:boatSpec.L/2;
+%mesh.ys = -boatSpec.W/2:mesh.dx:boatSpec.W/2;
+%mesh.zs = 0:mesh.dx:boatSpec.D;
 
-mesh.xs = -boatSpec.L/2:mesh.dx:boatSpec.L/2;
-mesh.ys = -boatSpec.W/2:mesh.dx:boatSpec.W/2;
-mesh.zs = 0:mesh.dx:boatSpec.D;
-
-[mesh.ygrid, mesh.zgrid] = meshgrid(mesh.ys, mesh.zs);
+%[mesh.ygrid, mesh.zgrid] = meshgrid(mesh.ys, mesh.zs);
 % [mesh.xgrid, mesh.ygrid, mesh.zgrid] = meshgrid(mesh.xs, mesh.ys, mesh.zs);
 
 %% calculations
-figure; hold on
-thetaVals = [0:20:160];
-nVals = [1, 2, 10];
-torques = zeros([length(thetaVals), length(nVals)]);
-for i = 1:length(nVals)
-    n = nVals(i);
-    for j = 1:length(thetaVals)
-        theta = thetaVals(j);
-        torque =  rightingMoment(theta, n);
-        torques(j,i) = torque(1);
-    end
-    plot(thetaVals, torques(:,i))
-end
-hold off
-torques
+% figure; hold on
+% thetaVals = [0:20:160];
+% nVals = [1, 2, 10];
+% torques = zeros([length(thetaVals), length(nVals)]);
+% for i = 1:length(nVals)
+%     n = nVals(i);
+%     for j = 1:length(thetaVals)
+%         theta = thetaVals(j);
+%         torque =  rightingMoment(theta, n);
+%         torques(j,i) = torque(1);
+%     end
+%     plot(thetaVals, torques(:,i))
+% end
+% hold off
+% torques
 
 %% functions
 function z = boatYZ(boatSpec, y)
