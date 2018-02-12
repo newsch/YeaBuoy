@@ -9,6 +9,8 @@ boatSpec.n = 2;            % shape parameter (dimensionless)
 
 
 waterSpec.density = 1000;  % kg / m^3
+waterSpec.eq = @waterRep;
+waterSpec.logeq = @waterLogRep;
 theta = 15;
 d = 2;
 %waterSpec.eq = @(y) waterRep(y, theta, d);
@@ -76,8 +78,8 @@ function y = waterRep(x, theta, d)
     y = tand(theta).*x + d;
 end
 
-function water = waterLogRep(mesh, x, theta, d)
-    y = waterRep(x, theta, d);
+function water = waterLogRep(mesh, theta, d)
+    y = waterRep(mesh.ygrid, theta, d);
     if tand(theta) < 0
         water = mesh.zgrid > y;
     else
