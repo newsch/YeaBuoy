@@ -19,27 +19,27 @@ d = 2;
 mesh.dx = 0.01;     % meters
 dy = mesh.dx;  % meters
 dz = mesh.dx;  % meters
-mesh = createMeshGrid(dy,dz,boatSpec);
 equationBoat = @(y) (boatYZ(boatSpec,y));
 boatSpec.hull = HullGenerator(mesh,equationBoat);
 [masses,boatSpec] = computeMasses(mesh,boatSpec);
 boatSpec.COM = centerOfMass(masses,mesh);
 thetaVals = [0:20:160];
-torques = zeros([length(thetaVals)]);
- for j = 1:length(thetaVals)
+torques = zeros(1, length(thetaVals));
+for j = 1:length(thetaVals)
     theta = thetaVals(j);
-    theta
-    fun = @(waterline) (MassDifference(waterline,boatSpec,theta,mesh,waterSpec.density));
+    fun = @(waterline) (MassDifference(waterline,boatSpec,theta,mesh,waterSpec));
     waterline = fzero(fun,0.05);
-    equationWater = @(y) waterRep(y, theta, d);
-    water = HullGenerator(mesh,equationWater);
+%     equationWater = @(y) waterRep(y, theta, d);
+%     water = HullGenerator(mesh,equationWater);
+    water = waterSpec.logeq(mesh, theta, waterline);
     displaced = boatSpec.hull & water;
     COB = centerOfMass(displaced,mesh);
+    % TODO: calculate actual displaced water mass
     BuoyForce = computeBuoyForce(theta,boatSpec.mass);
     torque = findMoment(boatSpec.COM,COB,BuoyForce);
     torques(j) = torque(1);
- end
- plot(thetaVals,torques);
+end
+plot(thetaVals,torques);
 %mesh.xs = -boatSpec.L/2:mesh.dx:boatSpec.L/2;
 %mesh.ys = -boatSpec.W/2:mesh.dx:boatSpec.W/2;
 %mesh.zs = 0:mesh.dx:boatSpec.D;
