@@ -19,6 +19,23 @@ d = 2;
 mesh.dx = 0.01;     % meters
 dy = mesh.dx;  % meters
 dz = mesh.dx;  % meters
+%mesh.xs = -boatSpec.L/2:mesh.dx:boatSpec.L/2;
+%mesh.ys = -boatSpec.W/2:mesh.dx:boatSpec.W/2;
+%mesh.zs = 0:mesh.dx:boatSpec.D;
+
+%[mesh.ygrid, mesh.zgrid] = meshgrid(mesh.ys, mesh.zs);
+% [mesh.xgrid, mesh.ygrid, mesh.zgrid] = meshgrid(mesh.xs, mesh.ys, mesh.zs);
+
+% mesh = createMeshGrid(dy,dz,boatSpec);
+
+% mesh.xs = 0:1:1;
+mesh.ys = -boatSpec.HB:dy:boatSpec.HB;        % meters
+mesh.zs = 0:dz:boatSpec.D;                % meters
+[mesh.ygrid,mesh.zgrid] = meshgrid(mesh.ys,mesh.zs); %create an yz meshgrid
+total_area = boatSpec.W * boatSpec.D;     % find the area of the subsection
+mesh.dA = total_area / numel(mesh.ygrid); % find the meshes
+
+%% calculations
 equationBoat = @(y) (boatYZ(boatSpec,y));
 boatSpec.hull = HullGenerator(mesh,equationBoat);
 [masses,boatSpec] = computeMasses(mesh,boatSpec);
@@ -40,39 +57,6 @@ for j = 1:length(thetaVals)
     torques(j) = torque(1);
 end
 plot(thetaVals,torques);
-%mesh.xs = -boatSpec.L/2:mesh.dx:boatSpec.L/2;
-%mesh.ys = -boatSpec.W/2:mesh.dx:boatSpec.W/2;
-%mesh.zs = 0:mesh.dx:boatSpec.D;
-
-%[mesh.ygrid, mesh.zgrid] = meshgrid(mesh.ys, mesh.zs);
-% [mesh.xgrid, mesh.ygrid, mesh.zgrid] = meshgrid(mesh.xs, mesh.ys, mesh.zs);
-
-
-% mesh = createMeshGrid(dy,dz,boatSpec);
-
-% mesh.xs = 0:1:1;
-mesh.ys = -boatSpec.HB:dy:boatSpec.HB;        % meters
-mesh.zs = 0:dz:boatSpec.D;                % meters
-[mesh.ygrid,mesh.zgrid] = meshgrid(mesh.ys,mesh.zs); %create an yz meshgrid
-total_area = boatSpec.W * boatSpec.D;     % find the area of the subsection
-mesh.dA = total_area / numel(mesh.ygrid); % find the meshes
-
-%% calculations
-% figure; hold on
-% thetaVals = [0:20:160];
-% nVals = [1, 2, 10];
-% torques = zeros([length(thetaVals), length(nVals)]);
-% for i = 1:length(nVals)
-%     n = nVals(i);
-%     for j = 1:length(thetaVals)
-%         theta = thetaVals(j);
-%         torque =  rightingMoment(theta, n);
-%         torques(j,i) = torque(1);
-%     end
-%     plot(thetaVals, torques(:,i))
-% end
-% hold off
-% torques
 
 %% functions
 function z = boatYZ(boatSpec, y)
