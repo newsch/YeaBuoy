@@ -15,9 +15,9 @@ theta = 15;
 d = 2;
 %waterSpec.eq = @(y) waterRep(y, theta, d);
 mast.mass = 0.096;
-mast.COM = [0,0,0.3];
+mast.COM = [0,0,0.2];
 ballast.mass = 0.7;
-ballast.COM = [0,0,0];
+ballast.COM = [0,0,0.03];
 
 
 mesh.dx = 0.005;     % meters
@@ -40,44 +40,53 @@ dz = mesh.dx;  % meters
 %mesh.dA = total_area / numel(mesh.ygrid); % find the meshes
 mesh = createMeshGrid3D(mesh.dx,dy,dz,boatSpec);
 %% calculations
-equationBoat = @(x,y) (boatXYZ(boatSpec,x,y));
-boatSpec.hull = HullGenerator3D(mesh,equationBoat);
-[masses,boatSpec] = computeMasses3D(mesh,boatSpec);
-boatSpec.COM = centerOfMass3D(masses,mesh);
-boatSpec = combineCenterMass(boatSpec,mast.mass,mast.COM);
-boatSpec = combineCenterMass(boatSpec,ballast.mass,ballast.COM);
-thetaVals = [0:2:160];
-torques = zeros(1, length(thetaVals));
-for j = 1:length(thetaVals)
-    theta = thetaVals(j);
-    fun = @(waterline) (MassDifference3D(waterline,boatSpec,theta,mesh,waterSpec));
-    waterline = fzero(fun,0.05);
-%     equationWater = @(y) waterRep(y, theta, d);
-%     water = HullGenerator(mesh,equationWater);
-    water = waterSpec.logeq(mesh, theta, waterline);
-    displaced = boatSpec.hull & water;
-    COB = centerOfMass3D(displaced,mesh);
-    % TODO: calculate actual displaced water mass
-    BuoyForce = computeBuoyForce(theta,boatSpec.mass);
-    torque = findMoment(boatSpec.COM,COB,BuoyForce);
-    torques(j) = torque(1);
+vals = [0.1:0.05:0.3];
+figure; hold on
+for val = vals
+    boatSpec.W = val;
+    boatSpec.HB = boatSpec.W / 2;
+
+    equationBoat = @(x,y) (boatXYZ(boatSpec,x,y));
+    boatSpec.hull = HullGenerator3D(mesh,equationBoat);
+    [masses,boatSpec] = computeMasses3D(mesh,boatSpec);
+    boatSpec.COM = centerOfMass3D(masses,mesh);
+    boatSpec = combineCenterMass(boatSpec,mast.mass,mast.COM);
+    boatSpec = combineCenterMass(boatSpec,ballast.mass,ballast.COM);
+    thetaVals = [0:8:180];
+    torques = zeros(1, length(thetaVals));
+    for j = 1:length(thetaVals)
+        theta = thetaVals(j);
+        fun = @(waterline) (MassDifference3D(waterline,boatSpec,theta,mesh,waterSpec));
+        waterline = fzero(fun,0.05);
+    %     equationWater = @(y) waterRep(y, theta, d);
+    %     water = HullGenerator(mesh,equationWater);
+        water = waterSpec.logeq(mesh, theta, waterline);
+        displaced = boatSpec.hull & water;
+        COB = centerOfMass3D(displaced,mesh);
+        % TODO: calculate actual displaced water mass
+        BuoyForce = computeBuoyForce(theta,boatSpec.mass);
+        torque = findMoment(boatSpec.COM,COB,BuoyForce);
+        torques(j) = torque(1);
+    end
+
+    %% plot AVS
+    plot(thetaVals,torques, 'DisplayName', num2str(val));
 end
-figure;
-plot(thetaVals,torques);
-hold on
 % AVS zone
 plot([120, 120], [-0.3, 0.5], '--')
 plot([140, 140], [-0.3, 0.5], '--')
-plot([0, 160], [0.0,0.0], '--')
-% plot hull w/ COM
-figure;
-isosurface(mesh.xgrid, mesh.ygrid, mesh.zgrid, boatSpec.hull, 0)
-isosurface(mesh.xgrid, mesh.ygrid, mesh.zgrid, displaced, 0)
-axis('equal')
-hold on
-plot3(boatSpec.COM(1), boatSpec.COM(2), boatSpec.COM(3), 'r*')
-plot3(COB(1),COB(2),COB(3),'b*')
-%plot3(COB(1) + BuoyForce(1) / 100,COB(2) + BuoyForce(2) / 100,COB(3) + BuoyForce(3) / 100,'g*')
+plot([0, 180], [0.0,0.0], '--')
+title(legend(), 'W vals')
+
+% %% plot hull
+% figure;
+% isosurface(mesh.xgrid, mesh.ygrid, mesh.zgrid, boatSpec.hull, 0)
+% % isosurface(mesh.xgrid, mesh.ygrid, mesh.zgrid, displaced, 0)
+% axis('equal')
+% hold on
+% plot3(boatSpec.COM(1), boatSpec.COM(2), boatSpec.COM(3), 'r*')
+% plot3(COB(1),COB(2),COB(3),'b*')
+% %plot3(COB(1) + BuoyForce(1) / 100,COB(2) + BuoyForce(2) / 100,COB(3) + BuoyForce(3) / 100,'g*')
 
 %% functions
 function z = boatXYZ(boatSpec,x, y)
