@@ -2,7 +2,7 @@
 boatSpec.L = 0.30;         % length in meters
 boatSpec.W = 0.2;         % width in meters
 boatSpec.HB = boatSpec.W / 2;  % half breadth in meters
-boatSpec.D = 0.10;         % depth in meters
+boatSpec.D = 0.1;         % depth in meters
 
 boatSpec.density = 500;    % kg / m^3
 boatSpec.xn = 4;            % shape parameter (dimensionless)
@@ -17,10 +17,10 @@ d = 2;
 mast.mass = 0.096;
 mast.COM = [0,0,0.3];
 ballast.mass = 0.7;
-ballast.COM = [0,0,0.05];
+ballast.COM = [0,0,0];
 
 
-mesh.dx = 0.01;     % meters
+mesh.dx = 0.005;     % meters
 dy = mesh.dx;  % meters
 dz = mesh.dx;  % meters
 %mesh.xs = -boatSpec.L/2:mesh.dx:boatSpec.L/2;
@@ -46,7 +46,7 @@ boatSpec.hull = HullGenerator3D(mesh,equationBoat);
 boatSpec.COM = centerOfMass3D(masses,mesh);
 boatSpec = combineCenterMass(boatSpec,mast.mass,mast.COM);
 boatSpec = combineCenterMass(boatSpec,ballast.mass,ballast.COM);
-thetaVals = [0:4:160];
+thetaVals = [0:2:160];
 torques = zeros(1, length(thetaVals));
 for j = 1:length(thetaVals)
     theta = thetaVals(j);
@@ -68,12 +68,16 @@ hold on
 % AVS zone
 plot([120, 120], [-0.3, 0.5], '--')
 plot([140, 140], [-0.3, 0.5], '--')
+plot([0, 160], [0.0,0.0], '--')
 % plot hull w/ COM
 figure;
 isosurface(mesh.xgrid, mesh.ygrid, mesh.zgrid, boatSpec.hull, 0)
+isosurface(mesh.xgrid, mesh.ygrid, mesh.zgrid, displaced, 0)
 axis('equal')
 hold on
 plot3(boatSpec.COM(1), boatSpec.COM(2), boatSpec.COM(3), 'r*')
+plot3(COB(1),COB(2),COB(3),'b*')
+%plot3(COB(1) + BuoyForce(1) / 100,COB(2) + BuoyForce(2) / 100,COB(3) + BuoyForce(3) / 100,'g*')
 
 %% functions
 function z = boatXYZ(boatSpec,x, y)
