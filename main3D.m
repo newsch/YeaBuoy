@@ -1,11 +1,11 @@
 %% boat, water, mesh init
 boatSpec.L = 0.30;         % length in meters
-boatSpec.W = 0.20;         % width in meters
+boatSpec.W = 0.2;         % width in meters
 boatSpec.HB = boatSpec.W / 2;  % half breadth in meters
 boatSpec.D = 0.10;         % depth in meters
 
 boatSpec.density = 500;    % kg / m^3
-boatSpec.xn = 5;            % shape parameter (dimensionless)
+boatSpec.xn = 4;            % shape parameter (dimensionless)
 boatSpec.yn = 3;
 
 waterSpec.density = 1000;  % kg / m^3
@@ -14,6 +14,10 @@ waterSpec.logeq = @waterLogRep;
 theta = 15;
 d = 2;
 %waterSpec.eq = @(y) waterRep(y, theta, d);
+mast.mass = 0.096;
+mast.COM = [0,0,0.3];
+ballast.mass = 0.7;
+ballast.COM = [0,0,0.05];
 
 
 mesh.dx = 0.01;     % meters
@@ -40,6 +44,8 @@ equationBoat = @(x,y) (boatXYZ(boatSpec,x,y));
 boatSpec.hull = HullGenerator3D(mesh,equationBoat);
 [masses,boatSpec] = computeMasses3D(mesh,boatSpec);
 boatSpec.COM = centerOfMass3D(masses,mesh);
+boatSpec = combineCenterMass(boatSpec,mast.mass,mast.COM);
+boatSpec = combineCenterMass(boatSpec,ballast.mass,ballast.COM);
 thetaVals = [0:4:160];
 torques = zeros(1, length(thetaVals));
 for j = 1:length(thetaVals)
