@@ -62,7 +62,18 @@ for j = 1:length(thetaVals)
     torque = findMoment(boatSpec.COM,COB,BuoyForce);
     torques(j) = torque(1);
 end
+figure;
 plot(thetaVals,torques);
+hold on
+% AVS zone
+plot([120, 120], [-0.3, 0.5], '--')
+plot([140, 140], [-0.3, 0.5], '--')
+% plot hull w/ COM
+figure;
+isosurface(mesh.xgrid, mesh.ygrid, mesh.zgrid, boatSpec.hull, 0)
+axis('equal')
+hold on
+plot3(boatSpec.COM(1), boatSpec.COM(2), boatSpec.COM(3), 'r*')
 
 %% functions
 function z = boatXYZ(boatSpec,x, y)
