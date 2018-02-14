@@ -1,12 +1,12 @@
 %% boat, water, mesh init
 boatSpec.L = 0.30;         % length in meters
-boatSpec.W = 0.2;         % width in meters
+boatSpec.W = 0.25;         % width in meters
 boatSpec.HB = boatSpec.W / 2;  % half breadth in meters
 boatSpec.D = 0.1;         % depth in meters
 
 boatSpec.density = 500;    % kg / m^3
-boatSpec.xn = 4;            % shape parameter (dimensionless)
-boatSpec.yn = 3;
+boatSpec.xn = 3;            % shape parameter (dimensionless)
+boatSpec.yn = 2;
 
 waterSpec.density = 1000;  % kg / m^3
 waterSpec.eq = @waterRep;
@@ -16,7 +16,7 @@ d = 2;
 %waterSpec.eq = @(y) waterRep(y, theta, d);
 mast.mass = 0.096;
 mast.COM = [0,0,0.2];
-ballast.mass = 0.7;
+ballast.mass = 1;
 ballast.COM = [0,0,0.03];
 
 
@@ -40,15 +40,15 @@ dz = mesh.dx;  % meters
 %mesh.dA = total_area / numel(mesh.ygrid); % find the meshes
 mesh = createMeshGrid3D(mesh.dx,dy,dz,boatSpec);
 %% calculations
-vals = [0.1:0.05:0.3];
+vals = [0.0:0.01:0.1];
 figure; hold on
 for val = vals
-    boatSpec.W = val;
-    boatSpec.HB = boatSpec.W / 2;
+    ballast.COM = [0,0,val];
 
     equationBoat = @(x,y) (boatXYZ(boatSpec,x,y));
     boatSpec.hull = HullGenerator3D(mesh,equationBoat);
     [masses,boatSpec] = computeMasses3D(mesh,boatSpec);
+    boatSpec.mass = .25;
     boatSpec.COM = centerOfMass3D(masses,mesh);
     boatSpec = combineCenterMass(boatSpec,mast.mass,mast.COM);
     boatSpec = combineCenterMass(boatSpec,ballast.mass,ballast.COM);
